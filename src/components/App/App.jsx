@@ -11,41 +11,42 @@ import Button from '../Button/Button';
 import Spinner from '../Loader/Loader';
 
 export const App = () => {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [page, setPage] = useState(1)
-  const [images, setImages] = useState([])
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [status, setStatus] = useState('idle')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [status, setStatus] = useState("idle");
 
   useEffect(() => {
     if (!searchQuery) {
       return;
     }
 
-    setStatus('pending');
+    setStatus("pending");
 
-    Api.getImages(searchQuery, page).then((images) => {
-      if (!images.length) {
-        throw new Error(`No results were found for "${searchQuery}"`)
-      }
-
-      setImages((prevImages) => [...prevImages, ...images]);
-      setStatus('resolve');
-
-      page > 1 &&
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: 'smooth',
-        });
-    })
-      .catch((error) => {
-        if (error) {
-          console.warn(error)
+    Api.getImages(searchQuery, page)
+      .then((images) => {
+        if (!images.length) {
+          throw new Error(`No results were found for "${searchQuery}"`);
         }
-        setStatus('idle');
 
-        toast.warning(`Not Found any images by query: ${searchQuery}`)
+        setImages((prevImages) => [...prevImages, ...images]);
+        setStatus("resolve");
+
+        page > 1 &&
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
       })
+      .catch((err) => {
+        if (err) {
+          console.warn(err);
+        }
+        setStatus("idle");
+
+        toast.warning(`Not Found any images by query: ${searchQuery}`);
+      });
   }, [searchQuery, page]);
 
   const resetState = () => {
@@ -53,24 +54,29 @@ export const App = () => {
     setPage(1);
     setImages([]);
     setSelectedImage(null);
-    setStatus('idle');
+    setStatus("idle");
   };
 
-  const onSubmit = query => {
-    if (query === searchQuery) {
+  const onSubmit = (query) => {
+    const repeatedQuery = query === searchQuery;
+
+    if (repeatedQuery) {
       return toast.info('Please, enter query!');
     }
+
     resetState();
-    setSearchQuery({ query });
+    setSearchQuery(query);
   };
 
   const onModalClose = () => {
     setSelectedImage(null);
+
     document.body.style.overflow = "";
   };
 
   const onImageSelect = (src, alt) => {
     setSelectedImage({ src, alt });
+
     document.body.style.overflow = "hidden";
   };
 
@@ -79,14 +85,14 @@ export const App = () => {
   };
 
   switch (status) {
-    case 'idle':
+    case "idle":
       return (
         <Section>
           <Searchbar onSubmit={onSubmit} />
         </Section>
       );
 
-    case 'pending':
+    case "pending":
       return (
         <Section>
           <Searchbar onSubmit={onSubmit} />
@@ -96,7 +102,7 @@ export const App = () => {
         </Section>
       );
 
-    case 'resolve':
+    case "resolve":
       return (
         <Section>
           <Searchbar onSubmit={onSubmit} />
@@ -117,4 +123,4 @@ export const App = () => {
         </Section>
       );
   }
-};
+}
